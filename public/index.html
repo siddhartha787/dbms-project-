@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailConnect - Railway Ticket Reservation System</title>
+    <meta name="description" content="Book train tickets, check PNR status, manage journeys - India's modern railway reservation system">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand" onclick="showPage('home')">
+                <span class="brand-icon">🚂</span>
+                <span class="brand-text">Rail<span class="brand-accent">Connect</span></span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#" class="nav-link" onclick="showPage('home')">Home</a>
+                <a href="#" class="nav-link" onclick="showPage('search')">Book Ticket</a>
+                <a href="#" class="nav-link" onclick="showPage('pnr')">PNR Status</a>
+                <a href="#" class="nav-link" onclick="showPage('trains')">Trains</a>
+                <div class="nav-auth" id="navAuth">
+                    <button class="btn btn-outline" onclick="showPage('login')">Login</button>
+                    <button class="btn btn-primary" onclick="showPage('register')">Register</button>
+                </div>
+                <div class="nav-user hidden" id="navUser">
+                    <div class="user-menu" onclick="toggleUserMenu()">
+                        <div class="user-avatar" id="userAvatar">R</div>
+                        <span id="userName">User</span>
+                        <span class="chevron">▾</span>
+                    </div>
+                    <div class="user-dropdown hidden" id="userDropdown">
+                        <a href="#" onclick="showPage('my-bookings')">📋 My Bookings</a>
+                        <a href="#" onclick="showPage('profile')">👤 Profile</a>
+                        <a href="#" onclick="showPage('notifications')">🔔 Notifications <span class="notif-badge" id="notifBadge">0</span></a>
+                        <a href="#" onclick="logout()" class="logout-link">🚪 Logout</a>
+                    </div>
+                </div>
+            </div>
+            <button class="nav-toggle" onclick="toggleNav()">☰</button>
+        </div>
+    </nav>
+
+    <!-- PAGES -->
+    <main id="mainContent">
+
+        <!-- HOME PAGE -->
+        <div id="page-home" class="page active">
+            <!-- 3D Futuristic Hero Section -->
+            <section class="hero-futuristic">
+                <div class="cyber-grid-bg"></div>
+                <div class="ambient-glow cyan-glow"></div>
+                <div class="ambient-glow emerald-glow"></div>
+
+                <div class="hero-container-split">
+                    <!-- Left Split: Hero Narrative & Split-screen Search Widget -->
+                    <div class="hero-left-pane">
+                        <div class="cyber-badge">
+                            <span class="pulse-dot"></span>
+                            <span class="badge-text">NEXT-GEN NEURAL TRANSIT & TICKET ENGINE</span>
+                        </div>
+                        <h1 class="hero-title-futuristic">
+                            HyperSpeed <span class="neon-cyan-text">Rail</span><span class="neon-emerald-text">Connect</span>
+                        </h1>
+                        <p class="hero-lead">
+                            Experience quantum-fast railway reservations with live telemetry, holographic seat selection, and sub-second PNR verification across 10,000+ national lines.
+                        </p>
+
+                        <!-- Split-Screen Search Widget (Origin, Destination, Date, Seat Class) -->
+                        <div class="split-search-box glass-panel-3d">
+                            <div class="search-tabs-cyber">
+                                <button class="cyber-tab active" id="tab-book" onclick="switchSearchTab('book')">
+                                    <span class="tab-icon">⚡</span> Book Express
+                                </button>
+                                <button class="cyber-tab" id="tab-pnr" onclick="switchSearchTab('pnr')">
+                                    <span class="tab-icon">📡</span> Live PNR Telemetry
+                                </button>
+                            </div>
+
+                            <div id="searchBook" class="cyber-tab-pane">
+                                <div class="split-inputs-grid">
+                                    <!-- Origin Station -->
+                                    <div class="input-card-3d">
+                                        <div class="input-meta">
+                                            <span class="meta-label">ORIGIN</span>
+                                            <span class="meta-indicator text-cyan">LOC A</span>
+                                        </div>
+                                        <div class="station-select-wrap">
+                                            <input type="text" id="homeFrom" placeholder="Source City / Code" class="cyber-input" autocomplete="off" oninput="filterStations('homeFrom','homeFromList')" onclick="filterStations('homeFrom','homeFromList')">
+                                            <div class="station-dropdown hidden" id="homeFromList"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Swap Button -->
+                                    <button class="cyber-swap-btn" onclick="swapStations('homeFrom','homeTo')" title="Reverse Direction">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8v12M17 20l4-4M17 20l-4-4"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Destination Station -->
+                                    <div class="input-card-3d">
+                                        <div class="input-meta">
+                                            <span class="meta-label">DESTINATION</span>
+                                            <span class="meta-indicator text-emerald">LOC B</span>
+                                        </div>
+                                        <div class="station-select-wrap">
+                                            <input type="text" id="homeTo" placeholder="Target City / Code" class="cyber-input" autocomplete="off" oninput="filterStations('homeTo','homeToList')" onclick="filterStations('homeTo','homeToList')">
+                                            <div class="station-dropdown hidden" id="homeToList"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="split-inputs-grid sub-grid">
+                                    <!-- Journey Date -->
+                                    <div class="input-card-3d">
+                                        <div class="input-meta">
+                                            <span class="meta-label">TRAVEL DATE</span>
+                                            <span class="meta-indicator">DEPARTURE</span>
+                                        </div>
+                                        <input type="date" id="homeDate" class="cyber-input date-input" min="">
+                                    </div>
+
+                                    <!-- Seat Class Selector -->
+                                    <div class="input-card-3d">
+                                        <div class="input-meta">
+                                            <span class="meta-label">SEAT CLASS</span>
+                                            <span class="meta-indicator text-cyan">TIER</span>
+                                        </div>
+                                        <select id="homeClass" class="cyber-input select-input" onchange="syncClassSelection(this.value)">
+                                            <option value="ALL">All Classes (Executive / AC / Sleeper)</option>
+                                            <option value="1A">AC 1st Class (1A) — Luxury Coupe</option>
+                                            <option value="2A">AC 2-Tier (2A) — Premium Comfort</option>
+                                            <option value="3A">AC 3-Tier (3A) — Smart Travel</option>
+                                            <option value="CC">AC Chair Car (CC) — Executive Day</option>
+                                            <option value="SL">Sleeper Class (SL) — Standard</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="widget-action-row">
+                                    <div class="quota-pills">
+                                        <span class="quota-pill active" onclick="selectQuotaQuick('GN', this)">General</span>
+                                        <span class="quota-pill" onclick="selectQuotaQuick('TQ', this)">⚡ Tatkal</span>
+                                        <span class="quota-pill" onclick="selectQuotaQuick('LD', this)">🌸 Ladies</span>
+                                    </div>
+                                    <button class="cyber-btn-launch" onclick="searchFromHome()">
+                                        <span>SEARCH VOYAGES</span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- PNR Quick Telemetry Check -->
+                            <div id="searchPnrHome" class="cyber-tab-pane hidden">
+                                <div class="pnr-cyber-wrap">
+                                    <div class="input-card-3d" style="flex:1;">
+                                        <div class="input-meta">
+                                            <span class="meta-label">10-DIGIT PASSENGER RECORD</span>
+                                            <span class="meta-indicator text-cyan">ACTIVE PNR</span>
+                                        </div>
+                                        <input type="text" id="homePnr" placeholder="Enter PNR number (e.g. 7482910384)" class="cyber-input" maxlength="10">
+                                    </div>
+                                    <button class="cyber-btn-launch" onclick="checkPnrFromHome()">
+                                        <span>VERIFY PNR</span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Split: Interactive 3D Train Model & Live Track Map Preview -->
+                    <div class="hero-right-pane">
+                        <!-- 3D Train Floating Canvas Showcase -->
+                        <div class="train-showcase-card glass-panel-3d">
+                            <div class="card-status-bar">
+                                <div class="status-indicator live">
+                                    <span class="live-dot"></span> LIVE TELEMETRY SIMULATOR
+                                </div>
+                                <div class="train-speed-tag">
+                                    <span class="speed-val">320</span> <span class="unit">KM/H</span>
+                                </div>
+                            </div>
+
+                            <!-- 3D Render Train Viewport -->
+                            <div class="train-3d-viewport" id="train3dViewport">
+                                <img src="images/hero_3d_train.jpg" alt="Futuristic 3D Train" class="floating-3d-train-img" id="train3dImg">
+                                <div class="hologram-rings">
+                                    <div class="ring ring-1"></div>
+                                    <div class="ring ring-2"></div>
+                                </div>
+                                <div class="hud-callout hud-left">
+                                    <div class="hud-label">MAGNETIC LEVITATION</div>
+                                    <div class="hud-val">STABLE · 99.8%</div>
+                                </div>
+                                <div class="hud-callout hud-right">
+                                    <div class="hud-label">CURRENT FREQUENCY</div>
+                                    <div class="hud-val">HYPERLOOP EXPRESS</div>
+                                </div>
+                            </div>
+
+                            <!-- Live Track Map Preview -->
+                            <div class="live-track-preview-box">
+                                <div class="track-preview-header">
+                                    <div class="track-title">
+                                        <span class="radar-dot"></span>
+                                        <span>LIVE TRACK MAP PREVIEW</span>
+                                    </div>
+                                    <span class="track-code">CORRIDOR: IND-EX-01</span>
+                                </div>
+
+                                <div class="track-visualizer">
+                                    <svg class="track-svg" viewBox="0 0 540 80" preserveAspectRatio="none">
+                                        <defs>
+                                            <linearGradient id="neonTrackGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#00f2fe" />
+                                                <stop offset="50%" stop-color="#10b981" />
+                                                <stop offset="100%" stop-color="#00f2fe" />
+                                            </linearGradient>
+                                            <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
+                                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                                <feMerge>
+                                                    <feMergeNode in="blur"/>
+                                                    <feMergeNode in="SourceGraphic"/>
+                                                </feMerge>
+                                            </filter>
+                                        </defs>
+
+                                        <!-- Track rails -->
+                                        <line x1="30" y1="40" x2="510" y2="40" stroke="rgba(255,255,255,0.1)" stroke-width="6" stroke-dasharray="8 6"/>
+                                        <line x1="30" y1="40" x2="510" y2="40" stroke="url(#neonTrackGrad)" stroke-width="2.5" filter="url(#glowEffect)"/>
+
+                                        <!-- Waypoint 1 (NDLS) -->
+                                        <circle cx="60" cy="40" r="7" fill="#00f2fe" filter="url(#glowEffect)"/>
+                                        <circle cx="60" cy="40" r="3" fill="#ffffff"/>
+                                        <text x="60" y="65" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">NDLS (Delhi)</text>
+
+                                        <!-- Waypoint 2 (KOTA) -->
+                                        <circle cx="210" cy="40" r="5" fill="#10b981"/>
+                                        <circle cx="210" cy="40" r="2" fill="#ffffff"/>
+                                        <text x="210" y="65" text-anchor="middle" fill="#64748b" font-size="10">KOTA</text>
+
+                                        <!-- Waypoint 3 (BRC) -->
+                                        <circle cx="360" cy="40" r="5" fill="#10b981"/>
+                                        <circle cx="360" cy="40" r="2" fill="#ffffff"/>
+                                        <text x="360" y="65" text-anchor="middle" fill="#64748b" font-size="10">BRC (Vadodara)</text>
+
+                                        <!-- Waypoint 4 (BCT) -->
+                                        <circle cx="480" cy="40" r="7" fill="#10b981" filter="url(#glowEffect)"/>
+                                        <circle cx="480" cy="40" r="3" fill="#ffffff"/>
+                                        <text x="480" y="65" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">BCT (Mumbai)</text>
+
+                                        <!-- Animated Train Beacon on Track -->
+                                        <circle class="moving-beacon" cx="280" cy="40" r="6" fill="#00f2fe" filter="url(#glowEffect)">
+                                            <animate attributeName="cx" values="60;480;60" dur="10s" repeatCount="indefinite" />
+                                        </circle>
+                                    </svg>
+                                </div>
+                                <div class="track-footer-meta">
+                                    <span>🟢 Signal: Clear Line 1</span>
+                                    <span>⚡ Power Grid: 25kV AC Nominal</span>
+                                    <span>📍 Next Transit Point: Kota Jn.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="stats-section">
+                <div class="container">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🚂</div>
+                            <div class="stat-number">160+</div>
+                            <div class="stat-label">Active Indian Trains</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📍</div>
+                            <div class="stat-number">188</div>
+                            <div class="stat-label">Pan-India Stations</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🎫</div>
+                            <div class="stat-number">1M+</div>
+                            <div class="stat-label">Tickets Booked</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-number">4.8</div>
+                            <div class="stat-label">Customer Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="features-section">
+                <div class="container">
+                    <h2 class="section-title">Why <span class="gradient-text">RailConnect?</span></h2>
+                    <div class="features-grid">
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">⚡</div>
+                            <h3>Instant Booking</h3>
+                            <p>Book tickets in under 60 seconds with our streamlined checkout process.</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">🔒</div>
+                            <h3>Secure Payments</h3>
+                            <p>Multiple payment options including UPI, Net Banking, Credit/Debit cards.</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">📱</div>
+                            <h3>Real-time PNR</h3>
+                            <p>Track your booking status and get live updates on seat confirmation.</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">💰</div>
+                            <h3>Easy Cancellation</h3>
+                            <p>Cancel anytime with our transparent refund policy as per Railway rules.</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">🛏️</div>
+                            <h3>Berth Selection</h3>
+                            <p>Choose your preferred berth type - Lower, Middle, Upper, Side berths.</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">👥</div>
+                            <h3>Group Booking</h3>
+                            <p>Book for multiple passengers in a single transaction with ease.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Popular Routes -->
+            <section class="routes-section">
+                <div class="container">
+                    <h2 class="section-title">Popular <span class="gradient-text">Routes</span></h2>
+                    <div class="popular-routes" id="popularRoutes">
+                        <div class="route-card" onclick="quickSearch(1,2)">
+                            <div class="route-from">🏛️ New Delhi</div>
+                            <div class="route-arrow">→</div>
+                            <div class="route-to">🌆 Mumbai</div>
+                            <div class="route-info">1384 km · From ₹1175</div>
+                        </div>
+                        <div class="route-card" onclick="quickSearch(1,4)">
+                            <div class="route-from">🏛️ New Delhi</div>
+                            <div class="route-arrow">→</div>
+                            <div class="route-to">🌊 Kolkata</div>
+                            <div class="route-info">1441 km · From ₹390</div>
+                        </div>
+                        <div class="route-card" onclick="quickSearch(1,3)">
+                            <div class="route-from">🏛️ New Delhi</div>
+                            <div class="route-arrow">→</div>
+                            <div class="route-to">🌴 Chennai</div>
+                            <div class="route-info">2180 km · From ₹210</div>
+                        </div>
+                        <div class="route-card" onclick="quickSearch(1,5)">
+                            <div class="route-from">🏛️ New Delhi</div>
+                            <div class="route-arrow">→</div>
+                            <div class="route-to">🌿 Bengaluru</div>
+                            <div class="route-info">2150 km · From ₹1175</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SEARCH / BOOK PAGE -->
+        <div id="page-search" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <h1>Search Trains</h1>
+                    <p>Find available trains between your stations</p>
+                </div>
+            </div>
+            <div class="container">
+                <div class="search-panel glass-card">
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label>From Station</label>
+                            <div class="station-select-wrap">
+                                <input type="text" id="searchFrom" placeholder="City or Station" class="form-input" autocomplete="off" oninput="filterStations('searchFrom','searchFromList')" onclick="filterStations('searchFrom','searchFromList')">
+                                <div class="station-dropdown hidden" id="searchFromList"></div>
+                            </div>
+                        </div>
+                        <button class="swap-btn" onclick="swapStations('searchFrom','searchTo')">⇌</button>
+                        <div class="search-field">
+                            <label>To Station</label>
+                            <div class="station-select-wrap">
+                                <input type="text" id="searchTo" placeholder="City or Station" class="form-input" autocomplete="off" oninput="filterStations('searchTo','searchToList')" onclick="filterStations('searchTo','searchToList')">
+                                <div class="station-dropdown hidden" id="searchToList"></div>
+                            </div>
+                        </div>
+                        <div class="search-field">
+                            <label>Journey Date</label>
+                            <input type="date" id="searchDate" class="form-input" min="">
+                        </div>
+                        <button class="btn btn-primary" onclick="searchTrains()">Search →</button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="searchResults" class="search-results"></div>
+            </div>
+        </div>
+
+        <!-- PNR STATUS PAGE -->
+        <div id="page-pnr" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <h1>PNR Status</h1>
+                    <p>Check your booking status using PNR number</p>
+                </div>
+            </div>
+            <div class="container">
+                <div class="pnr-widget glass-card">
+                    <div class="pnr-input-row">
+                        <input type="text" id="pnrInput" placeholder="Enter 10-digit PNR number" class="form-input pnr-input" maxlength="10">
+                        <button class="btn btn-primary" onclick="checkPnr()">Check Status</button>
+                    </div>
+                </div>
+                <div id="pnrResult" class="pnr-result"></div>
+            </div>
+        </div>
+
+        <!-- TRAINS PAGE -->
+        <div id="page-trains" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <h1>All Trains</h1>
+                    <p>Browse our complete list of trains</p>
+                </div>
+            </div>
+            <div class="container">
+                <div class="filter-bar glass-card">
+                    <input type="text" id="trainSearch" placeholder="Search by train number, name, or city..." class="form-input" oninput="filterTrains()">
+                    <div class="train-type-filters" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                        <button class="quota-pill train-type-pill active" onclick="filterTrainType('ALL', this)">All Trains</button>
+                        <button class="quota-pill train-type-pill" onclick="filterTrainType('Vande Bharat', this)">⚡ Vande Bharat</button>
+                        <button class="quota-pill train-type-pill" onclick="filterTrainType('Rajdhani', this)">👑 Rajdhani</button>
+                        <button class="quota-pill train-type-pill" onclick="filterTrainType('Shatabdi', this)">🚅 Shatabdi</button>
+                        <button class="quota-pill train-type-pill" onclick="filterTrainType('Superfast', this)">⚡ Superfast</button>
+                        <button class="quota-pill train-type-pill" onclick="filterTrainType('Mail', this)">📬 Mail</button>
+                        <button class="quota-pill train-type-pill" onclick="filterTrainType('Express', this)">🚂 Express</button>
+                    </div>
+                </div>
+                <div id="trainsList" class="trains-list"></div>
+            </div>
+        </div>
+
+        <!-- MY BOOKINGS PAGE -->
+        <div id="page-my-bookings" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <h1>My Bookings</h1>
+                    <p>View and manage your ticket bookings</p>
+                </div>
+            </div>
+            <div class="container">
+                <div class="bookings-tabs">
+                    <button class="tab-btn active" onclick="filterBookings('all')">All</button>
+                    <button class="tab-btn" onclick="filterBookings('Confirmed')">Confirmed</button>
+                    <button class="tab-btn" onclick="filterBookings('RAC')">RAC</button>
+                    <button class="tab-btn" onclick="filterBookings('Waitlisted')">Waitlisted</button>
+                    <button class="tab-btn" onclick="filterBookings('Cancelled')">Cancelled</button>
+                </div>
+                <div id="myBookingsList"></div>
+            </div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div id="page-profile" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <h1>My Profile</h1>
+                    <p>Manage your account information</p>
+                </div>
+            </div>
+            <div class="container">
+                <div class="profile-container glass-card">
+                    <div class="profile-avatar-section">
+                        <div class="profile-avatar-large" id="profileAvatarLarge">R</div>
+                        <div>
+                            <h2 id="profileName">Loading...</h2>
+                            <p id="profileEmail" class="text-muted"></p>
+                            <span class="badge badge-success" id="profileRole">Passenger</span>
+                        </div>
+                    </div>
+                    <form class="profile-form" id="profileForm" onsubmit="updateProfile(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="profileFullName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text" id="profilePhone" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="profileGender" class="form-input">
+                                    <option>Male</option><option>Female</option><option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date of Birth</label>
+                                <input type="date" id="profileDob" class="form-input">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Address</label>
+                                <textarea id="profileAddress" class="form-input" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS PAGE -->
+        <div id="page-notifications" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <h1>Notifications</h1>
+                    <button class="btn btn-outline" onclick="markAllRead()">Mark All Read</button>
+                </div>
+            </div>
+            <div class="container">
+                <div id="notificationsList"></div>
+            </div>
+        </div>
+
+        <!-- LOGIN PAGE -->
+        <div id="page-login" class="page auth-page">
+            <div class="auth-container">
+                <div class="auth-card glass-card">
+                    <div class="auth-header">
+                        <div class="auth-logo">🚂</div>
+                        <h2>Welcome Back</h2>
+                        <p>Login to your RailConnect account</p>
+                    </div>
+                    <form id="loginForm" onsubmit="login(event)">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="loginEmail" class="form-input" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <div class="password-wrap">
+                                <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+                                <button type="button" class="toggle-pw" onclick="togglePassword('loginPassword')">👁</button>
+                            </div>
+                        </div>
+                        <div id="loginError" class="error-msg hidden"></div>
+                        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Login</button>
+                    </form>
+                    <div class="auth-footer">
+                        <p>Don't have an account? <a href="#" onclick="showPage('register')">Register here</a></p>
+                        <div class="demo-creds">
+                            <p>🔑 Demo credentials:</p>
+                            <p>Passenger: rahul@example.com / admin123</p>
+                            <p>Admin: admin@railway.com / admin123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTER PAGE -->
+        <div id="page-register" class="page auth-page">
+            <div class="auth-container">
+                <div class="auth-card glass-card">
+                    <div class="auth-header">
+                        <div class="auth-logo">🚂</div>
+                        <h2>Create Account</h2>
+                        <p>Join RailConnect today</p>
+                    </div>
+                    <form id="registerForm" onsubmit="register(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="regName" class="form-input" placeholder="Your Full Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" id="regPhone" class="form-input" placeholder="10-digit mobile" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Email Address</label>
+                                <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="regGender" class="form-input">
+                                    <option>Male</option><option>Female</option><option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date of Birth</label>
+                                <input type="date" id="regDob" class="form-input">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Password</label>
+                                <div class="password-wrap">
+                                    <input type="password" id="regPassword" class="form-input" placeholder="Min 6 characters" required minlength="6">
+                                    <button type="button" class="toggle-pw" onclick="togglePassword('regPassword')">👁</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="regError" class="error-msg hidden"></div>
+                        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                    </form>
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="#" onclick="showPage('login')">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKING PAGE -->
+        <div id="page-booking" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <h1>Book Your Ticket</h1>
+                    <p>Complete your booking details</p>
+                </div>
+            </div>
+            <div class="container">
+                <div class="booking-container">
+                    <!-- Journey Summary -->
+                    <div class="booking-summary glass-card" id="bookingSummary"></div>
+
+                    <!-- Interactive Coach & Seat Selection -->
+                    <div class="seat-selection-card" id="seatSelectionSection"></div>
+
+                    <!-- Passengers Form -->
+                    <div class="glass-card">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <h3 style="margin:0;">Passenger Details</h3>
+                            <span id="selectedSeatsSummaryBadge" class="passenger-assigned-seat-pill hidden"></span>
+                        </div>
+                        <div id="passengerForms"></div>
+                        <button class="btn btn-outline add-passenger-btn" onclick="addPassengerForm()" id="addPassengerBtn">+ Add Passenger</button>
+                    </div>
+                    <!-- Payment Gateway Component -->
+                    <div class="glass-card payment-section-3d">
+                        <div class="payment-card-header">
+                            <div>
+                                <h3 style="display:flex;align-items:center;gap:10px;">
+                                    <span>🔐 Secure Payment Gateway</span>
+                                    <span class="secure-badge">256-BIT ENCRYPTED</span>
+                                </h3>
+                                <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">Select preferred payment instrument for instant ticket confirmation</p>
+                            </div>
+                            <div class="accepted-icons">
+                                <span title="UPI">📱 UPI</span>
+                                <span title="Cards">💳 Visa/Master</span>
+                                <span title="Net Banking">🏦 NetBanking</span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method Tabs -->
+                        <div class="payment-tabs-grid">
+                            <button type="button" class="pay-tab-btn active" data-pay="UPI" onclick="switchPayMethod('UPI', this)">
+                                <span class="pay-tab-icon">⚡</span>
+                                <div>
+                                    <div class="pay-tab-title">UPI Instant</div>
+                                    <div class="pay-tab-sub">GPay, PhonePe, Paytm</div>
+                                </div>
+                            </button>
+                            <button type="button" class="pay-tab-btn" data-pay="Card" onclick="switchPayMethod('Card', this)">
+                                <span class="pay-tab-icon">💳</span>
+                                <div>
+                                    <div class="pay-tab-title">Credit / Debit Card</div>
+                                    <div class="pay-tab-sub">Visa, Mastercard, RuPay</div>
+                                </div>
+                            </button>
+                            <button type="button" class="pay-tab-btn" data-pay="Net Banking" onclick="switchPayMethod('Net Banking', this)">
+                                <span class="pay-tab-icon">🏦</span>
+                                <div>
+                                    <div class="pay-tab-title">Net Banking</div>
+                                    <div class="pay-tab-sub">SBI, HDFC, ICICI, Axis</div>
+                                </div>
+                            </button>
+                            <button type="button" class="pay-tab-btn" data-pay="Wallet" onclick="switchPayMethod('Wallet', this)">
+                                <span class="pay-tab-icon">👛</span>
+                                <div>
+                                    <div class="pay-tab-title">Digital Wallet</div>
+                                    <div class="pay-tab-sub">Amazon Pay, Mobikwik</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Dynamic Payment Inputs based on selected method -->
+                        <div class="payment-input-area" id="payInputArea">
+                            <!-- UPI View (Default) -->
+                            <div id="payView-UPI" class="pay-view">
+                                <div class="upi-box">
+                                    <div class="form-group" style="flex:1;">
+                                        <label>Enter Virtual Payment Address (VPA / UPI ID)</label>
+                                        <div class="upi-input-wrap">
+                                            <input type="text" id="vpaInput" class="form-input" placeholder="username@okhdfcbank" value="passenger@upi">
+                                            <button type="button" class="btn btn-sm btn-outline verify-btn" onclick="verifyVpa()">Verify VPA</button>
+                                        </div>
+                                        <span class="vpa-status text-emerald" id="vpaStatus">✓ Verified: Rahul Sharma (SBI UPI)</span>
+                                    </div>
+                                    <div class="qr-preview-box">
+                                        <div class="mock-qr">
+                                            <div class="qr-scan-line"></div>
+                                            <div style="font-size:2.2rem;">📱</div>
+                                        </div>
+                                        <span style="font-size:0.75rem;color:var(--text-muted);">Scan QR with any UPI App</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card View -->
+                            <div id="payView-Card" class="pay-view hidden">
+                                <div class="card-inputs-grid">
+                                    <div class="form-group full-width">
+                                        <label>Card Number</label>
+                                        <input type="text" class="form-input" placeholder="4532 •••• •••• 8892" maxlength="19" value="4532 9182 3409 8892">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Cardholder Name</label>
+                                        <input type="text" class="form-input" placeholder="Name as printed on card" value="RAHUL SHARMA">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Expiry Date</label>
+                                        <input type="text" class="form-input" placeholder="MM/YY" maxlength="5" value="08/29">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>CVV / CVC</label>
+                                        <input type="password" class="form-input" placeholder="•••" maxlength="4" value="452">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Net Banking View -->
+                            <div id="payView-NetBanking" class="pay-view hidden">
+                                <div class="bank-selection-grid">
+                                    <label class="bank-pill active"><input type="radio" name="bank" checked> <span>State Bank of India</span></label>
+                                    <label class="bank-pill"><input type="radio" name="bank"> <span>HDFC Bank</span></label>
+                                    <label class="bank-pill"><input type="radio" name="bank"> <span>ICICI Bank</span></label>
+                                    <label class="bank-pill"><input type="radio" name="bank"> <span>Axis Bank</span></label>
+                                    <label class="bank-pill"><input type="radio" name="bank"> <span>Punjab National Bank</span></label>
+                                    <label class="bank-pill"><input type="radio" name="bank"> <span>Bank of Baroda</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Wallet View -->
+                            <div id="payView-Wallet" class="pay-view hidden">
+                                <div class="wallet-options">
+                                    <label class="wallet-pill active"><input type="radio" name="wallet" checked> <span>Amazon Pay Balance</span></label>
+                                    <label class="wallet-pill"><input type="radio" name="wallet"> <span>Paytm Wallet</span></label>
+                                    <label class="wallet-pill"><input type="radio" name="wallet"> <span>Mobikwik SuperCash</span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price Breakdown -->
+                        <div class="fare-breakdown" id="fareBreakdown"></div>
+
+                        <!-- Submit Button -->
+                        <button class="btn btn-primary btn-block btn-book-3d" onclick="confirmBooking()" id="bookBtn">
+                            <span>🔐 PAY SECURELY & GENERATE TICKET</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TICKET SUCCESS PAGE -->
+        <div id="page-ticket" class="page">
+            <div class="container">
+                <div class="ticket-success glass-card" id="ticketSuccess">
+                    <div class="success-icon">✅</div>
+                    <h2>Booking Confirmed!</h2>
+                    <div id="ticketDetails"></div>
+                    <div class="ticket-actions">
+                        <button class="btn btn-primary" onclick="printTicket()">🖨️ Print Ticket</button>
+                        <button class="btn btn-outline" onclick="showPage('my-bookings')">📋 View All Bookings</button>
+                        <button class="btn btn-outline" onclick="showPage('home')">🏠 Back to Home</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAIN DETAIL PAGE -->
+        <div id="page-train-detail" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <button class="btn btn-outline back-btn" onclick="history.back()">← Back</button>
+                    <h1 id="trainDetailTitle">Train Details</h1>
+                </div>
+            </div>
+            <div class="container">
+                <div id="trainDetailContent"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- BOOKING MODAL -->
+    <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModal()">
+        <div class="modal glass-card" onclick="event.stopPropagation()" id="bookingModal">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="nav-brand">🚂 Rail<span class="brand-accent">Connect</span></div>
+                    <p>Modern railway booking for modern India. Safe, Fast, Reliable.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <a href="#" onclick="showPage('search')">Book Ticket</a>
+                    <a href="#" onclick="showPage('pnr')">PNR Status</a>
+                    <a href="#" onclick="showPage('trains')">All Trains</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="#">Railway Helpline: 139</a>
+                    <a href="#">Tourist Helpline: 1800-111-139</a>
+                    <a href="#">admin@railway.com</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 RailConnect | DBMS Project | Built with ❤️ for Indian Railways</p>
+                <a href="/admin.html" class="admin-link">Admin Panel →</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js?v=2.3"></script>
+</body>
+</html>

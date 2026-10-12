@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailConnect Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-brand">
+            <span>🚂</span>
+            <div><span>Rail</span><span class="brand-accent">Connect</span></div>
+        </div>
+        <div class="sidebar-admin-info" id="sidebarAdminInfo">
+            <div class="admin-avatar" id="adminAvatar">A</div>
+            <div>
+                <div id="adminName" class="admin-name">Admin</div>
+                <div class="admin-role">Administrator</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-link active" data-page="dashboard" onclick="showAdminPage('dashboard')">📊 Dashboard</a>
+            <a href="#" class="sidebar-link" data-page="bookings" onclick="showAdminPage('bookings')">🎫 Bookings</a>
+            <a href="#" class="sidebar-link" data-page="trains" onclick="showAdminPage('trains')">🚂 Trains</a>
+            <a href="#" class="sidebar-link" data-page="stations" onclick="showAdminPage('stations')">📍 Stations</a>
+            <a href="#" class="sidebar-link" data-page="users" onclick="showAdminPage('users')">👥 Users</a>
+            <a href="#" class="sidebar-link" data-page="cancellations" onclick="showAdminPage('cancellations')">❌ Cancellations</a>
+            <a href="#" class="sidebar-link" data-page="logs" onclick="showAdminPage('logs')">📋 Audit Logs</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/" class="sidebar-link">🏠 Back to Site</a>
+            <a href="#" class="sidebar-link" onclick="adminLogout()">🚪 Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="adminMain">
+        <!-- Top Bar -->
+        <header class="admin-topbar">
+            <button class="sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+            <h2 id="adminPageTitle">Dashboard</h2>
+            <div style="display:flex;gap:12px;align-items:center;">
+                <span id="topbarAdminName" style="color:var(--text-muted);font-size:0.9rem;"></span>
+                <div class="admin-avatar-sm" id="topbarAvatar">A</div>
+            </div>
+        </header>
+
+        <!-- LOGIN GATE -->
+        <div id="adminLoginGate" class="admin-page" style="display:flex;align-items:center;justify-content:center;min-height:80vh;">
+            <div class="glass-card" style="max-width:420px;width:100%;padding:48px 40px;text-align:center;">
+                <div style="font-size:3rem;margin-bottom:16px;">🔑</div>
+                <h2 style="margin-bottom:8px;">Admin Login</h2>
+                <p style="color:var(--text-muted);margin-bottom:24px;">Enter admin credentials to access the panel</p>
+                <form onsubmit="adminLogin(event)">
+                    <div class="form-group" style="margin-bottom:16px;text-align:left;">
+                        <label>Email</label>
+                        <input type="email" id="adminEmail" class="form-input" value="admin@railway.com" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:24px;text-align:left;">
+                        <label>Password</label>
+                        <input type="password" id="adminPassword" class="form-input" value="admin123" required>
+                    </div>
+                    <div id="adminLoginErr" class="error-msg hidden" style="margin-bottom:16px;"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Login to Admin Panel</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- DASHBOARD PAGE -->
+        <div id="admin-page-dashboard" class="admin-page hidden">
+            <div class="stats-grid-admin" id="adminStatsGrid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+            <div class="admin-charts-row">
+                <div class="glass-card chart-card">
+                    <h3>Revenue Overview</h3>
+                    <div id="revenueChart" class="chart-container"></div>
+                </div>
+                <div class="glass-card chart-card">
+                    <h3>Top Trains by Bookings</h3>
+                    <div id="topTrainsChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKINGS PAGE -->
+        <div id="admin-page-bookings" class="admin-page hidden">
+            <div class="admin-toolbar">
+                <input type="text" id="bookingSearch" class="form-input" placeholder="Search PNR, passenger name..." oninput="loadAdminBookings()" style="max-width:300px;">
+                <select id="bookingStatusFilter" class="form-input" onchange="loadAdminBookings()" style="max-width:180px;">
+                    <option value="">All Status</option>
+                    <option>Confirmed</option><option>RAC</option><option>Waitlisted</option>
+                    <option>Cancelled</option><option>Completed</option>
+                </select>
+            </div>
+            <div class="glass-card" style="padding:0;overflow:hidden;">
+                <table class="admin-table" id="bookingsTable">
+                    <thead><tr>
+                        <th>PNR</th><th>Passenger</th><th>Train</th><th>From → To</th>
+                        <th>Date</th><th>Fare</th><th>Status</th><th>Actions</th>
+                    </tr></thead>
+                    <tbody id="bookingsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="bookingsPagination"></div>
+        </div>
+
+        <!-- TRAINS PAGE -->
+        <div id="admin-page-trains" class="admin-page hidden">
+            <div class="admin-toolbar">
+                <button class="btn btn-primary" onclick="openTrainModal()">+ Add Train</button>
+                <input type="text" id="adminTrainSearch" class="form-input" placeholder="Search trains..." oninput="loadAdminTrains()" style="max-width:300px;">
+            </div>
+            <div class="glass-card" style="padding:0;overflow:hidden;">
+                <table class="admin-table" id="trainsAdminTable">
+                    <thead><tr><th>Number</th><th>Name</th><th>Type</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="trainsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- STATIONS PAGE -->
+        <div id="admin-page-stations" class="admin-page hidden">
+            <div class="admin-toolbar">
+                <button class="btn btn-primary" onclick="openStationModal()">+ Add Station</button>
+            </div>
+            <div class="glass-card" style="padding:0;overflow:hidden;">
+                <table class="admin-table">
+                    <thead><tr><th>Code</th><th>Station Name</th><th>City</th><th>State</th><th>Zone</th><th>Actions</th></tr></thead>
+                    <tbody id="stationsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- USERS PAGE -->
+        <div id="admin-page-users" class="admin-page hidden">
+            <div class="glass-card" style="padding:0;overflow:hidden;">
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Bookings</th><th>Total Spent</th><th>Joined</th></tr></thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CANCELLATIONS PAGE -->
+        <div id="admin-page-cancellations" class="admin-page hidden">
+            <div class="glass-card" style="padding:0;overflow:hidden;">
+                <table class="admin-table">
+                    <thead><tr><th>PNR</th><th>Train</th><th>Cancelled By</th><th>Refund</th><th>Charges</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody id="cancellationsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- LOGS PAGE -->
+        <div id="admin-page-logs" class="admin-page hidden">
+            <div class="glass-card" style="padding:0;overflow:hidden;">
+                <table class="admin-table">
+                    <thead><tr><th>Admin</th><th>Action</th><th>Table</th><th>Record ID</th><th>Time</th></tr></thead>
+                    <tbody id="logsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Train Modal -->
+    <div class="modal-overlay hidden" id="adminModalOverlay" onclick="closeAdminModal()">
+        <div class="modal glass-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeAdminModal()">✕</button>
+            <div id="adminModalContent"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
